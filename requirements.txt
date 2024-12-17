@@ -12,3 +12,12 @@ pypdf==4.3.1
 pydantic==2.9.1
 pydantic_core==2.23.3
 streamlit==1.35.0
+numpy==1.26.0
+torch==2.5.1
+torchvision==0.20.1+cpu
+torchaudio==2.5.1+cpu
+langchain-community==0.2.16
+langchain-core<0.3.0
+langsmith<0.2.0
+tenacity<9.0.0
+streamlit==1.35.0

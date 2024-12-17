@@ -10,21 +10,27 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain_core.prompts import ChatPromptTemplate
 
+
+#Configurações da LLM
 llm = ChatOpenAI(
     openai_api_key=os.getenv('OPENAI_API_KEY'), 
     temperature=0
 )
 
+#Configurações de embeddings
 embedding_provider = OpenAIEmbeddings(
     openai_api_key=os.getenv('OPENAI_API_KEY')
     )
 
+#Configurações do BD
 graph = Neo4jGraph(
     url=os.getenv('NEO4J_URI'),
     username=os.getenv('NEO4J_USERNAME'),
     password=os.getenv('NEO4J_PASSWORD')
 )
 
+#Configuração do vetor de busca no Neo4j
+#Configurar um vetor de busca no Neo4j que utiliza embeddings.
 chunk_vector = Neo4jVector.from_existing_index(
     embedding_provider,
     graph=graph,
@@ -59,6 +65,7 @@ RETURN
 """
 )
 
+#Definição do prompt
 instructions = (
     "Use the given context to answer the question."
     "Reply with an answer that includes the id of the document and other relevant information from the text."
@@ -73,12 +80,15 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
+#Configuração da cadeia de recuperação
 chunk_retriever = chunk_vector.as_retriever()
 chunk_chain = create_stuff_documents_chain(llm, prompt)
 chunk_retriever = create_retrieval_chain(
     chunk_retriever, 
     chunk_chain
 )
+# Busca os documentos relevantes (retriever).
+# Passa os documentos e o contexto ao LLM para gerar uma resposta.
 
 def find_chunk(q):
     return chunk_retriever.invoke({"input": q})
@@ -86,3 +96,6 @@ def find_chunk(q):
 while True:
     q = input(">")
     print(find_chunk(q))
+    
+# find_chunk(q): Recebe uma pergunta (q), envia para a cadeia de recuperação e retorna a resposta.
+# Loop while True: Permite ao usuário fazer perguntas no terminal de forma contínua.
