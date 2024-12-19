@@ -1,50 +1,46 @@
 import os
-
+from pydantic import BaseModel
 from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain.chat_models import HuggingFacePipeline
 from langchain_community.graphs import Neo4jGraph
-from langchain_openai import ChatOpenAI
 from langchain_experimental.graph_transformers import LLMGraphTransformer
-from langchain_community.graphs.graph_document import Node, Relationship
-from langchain.embeddings import HuggingFaceEmbeddings
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 
 from dotenv import load_dotenv
 load_dotenv()
 
-#Entrada
+# Entrada
 DOCS_PATH = "llm-knowledge-graph\\data\\dados"
 
-#Configurando LLM
-llm = ChatOpenAI(
-    openai_api_base="http://localhost:1234/v1",  # URL do servidor API do LM Studio
-    model_name="multi-qa-MiniLM-L6-cos-v1",  # Nome do modelo configurado no LM Studio
-    openai_api_key=os.getenv('OPENAI_API_KEY'),
-    temperature=0.0,  
-)
+# Configurando o modelo LLM do LM Studio
+model_name = "multi-qa-MiniLM-L6-cos-v1"  
+
+# Carregar tokenizer e modelo localmente
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSequenceClassification.from_pretrained(model_name)
+
+# Criar pipeline para geração de texto
+hf_pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer)
+
+# Configurando o LLM para LangChain
+llm = HuggingFacePipeline(pipeline=hf_pipeline)
 
 # Fazer uma consulta ao modelo como teste
-response = llm.predict("Explique a importância dos embeddings no NLP.")
-print(response)
+response = llm.invoke("Explique a importância dos embeddings no NLP.")
+print("Resposta do modelo:", response)
 
-#Configurando provedor de embeddings
-embedding_provider = OpenAIEmbeddings(
-    openai_api_base="http://localhost:1234/v1",  # URL base do LM Studio
-    model="multi-qa-MiniLM-L6-cos-v1",  # Substitua pelo modelo configurado no LM Studio
-    openai_api_key=os.getenv('OPENAI_API_KEY'),  # Não usado, mas necessário
+# Configurando provedor de embeddings
+embedding_provider = HuggingFaceEmbeddings(
+    model_name=model_name,
+    model_kwargs={"device": "cpu"}  # Altere para "cuda" se estiver usando GPU
 )
 
-#Alternativa 
-# embedding_provider = HuggingFaceEmbeddings(
-#     model_name="multi-qa-MiniLM-L6-cos-v1",
-#     model_kwargs={"device": "cpu"}  # ou "cuda" se você estiver usando GPU
-# )
-
-
-# Exemplo: Gerar embeddings para uma query
+# Gerar embeddings para uma query
 query = "Como os embeddings ajudam na recuperação de informações?"
 vector = embedding_provider.embed_query(query)
-print(vector)
+print("Vector gerado para a query:", vector)
 
 
 #Conexão com o BD

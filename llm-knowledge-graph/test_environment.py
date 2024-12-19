@@ -23,12 +23,12 @@ class TestEnvironment(unittest.TestCase):
             os.getenv(variable_name),
             f"{variable_name} not found in .env file")
 
-    def test_openai_variables(self):
-        if TestEnvironment.skip_env_variable_tests:
-            self.skipTest("Skipping OpenAI env variable test")
+    # def test_openai_variables(self):
+    #     if TestEnvironment.skip_env_variable_tests:
+    #         self.skipTest("Skipping OpenAI env variable test")
 
-        self.env_variable_exists('OPENAI_API_KEY')
-        TestEnvironment.skip_openai_test = False
+    #     self.env_variable_exists('OPENAI_API_KEY')
+    #     TestEnvironment.skip_openai_test = False
 
     def test_neo4j_variables(self):
         if TestEnvironment.skip_env_variable_tests:
@@ -39,21 +39,21 @@ class TestEnvironment(unittest.TestCase):
         self.env_variable_exists('NEO4J_PASSWORD')
         TestEnvironment.skip_neo4j_test = False
 
-    def test_openai_connection(self):
-        if TestEnvironment.skip_openai_test:
-            self.skipTest("Skipping OpenAI test")
+    # def test_openai_connection(self):
+    #     if TestEnvironment.skip_openai_test:
+    #         self.skipTest("Skipping OpenAI test")
 
-        from openai import OpenAI, AuthenticationError
+    #     from openai import OpenAI, AuthenticationError
 
-        llm = OpenAI()
+    #     llm = OpenAI()
         
-        try:
-            models = llm.models.list()
-        except AuthenticationError as e:
-            models = None
-        self.assertIsNotNone(
-            models,
-            "OpenAI connection failed. Check the OPENAI_API_KEY key in .env file.")
+    #     try:
+    #         models = llm.models.list()
+    #     except AuthenticationError as e:
+    #         models = None
+    #     self.assertIsNotNone(
+    #         models,
+    #         "OpenAI connection failed. Check the OPENAI_API_KEY key in .env file.")
 
     def test_neo4j_connection(self):
         if TestEnvironment.skip_neo4j_test:
@@ -82,9 +82,9 @@ class TestEnvironment(unittest.TestCase):
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(TestEnvironment('test_env_file_exists'))
-    suite.addTest(TestEnvironment('test_openai_variables'))
+    #suite.addTest(TestEnvironment('test_openai_variables'))
     suite.addTest(TestEnvironment('test_neo4j_variables'))
-    suite.addTest(TestEnvironment('test_openai_connection'))
+    #suite.addTest(TestEnvironment('test_openai_connection'))
     suite.addTest(TestEnvironment('test_neo4j_connection'))
     return suite
 
