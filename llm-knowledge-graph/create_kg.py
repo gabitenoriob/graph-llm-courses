@@ -1,12 +1,13 @@
 import os
-from pydantic import BaseModel
+from pydantic.v1 import BaseModel
 from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain.chat_models import HuggingFacePipeline
 from langchain_community.graphs import Neo4jGraph
 from langchain_experimental.graph_transformers import LLMGraphTransformer
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+from langchain_community.chat_models import HuggingFacePipeline
+
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -22,7 +23,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
 # Criar pipeline para geração de texto
-hf_pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer)
+hf_pipeline = pipeline("feature-extraction", model=model, device=0)  # Use device=-1 para CPU
 
 # Configurando o LLM para LangChain
 llm = HuggingFacePipeline(pipeline=hf_pipeline)
