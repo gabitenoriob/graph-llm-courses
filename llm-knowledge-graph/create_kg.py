@@ -6,7 +6,7 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.graphs import Neo4jGraph
 from langchain_experimental.graph_transformers import LLMGraphTransformer
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
-from langchain_community.chat_models import HuggingFacePipeline
+from langchain.llms import HuggingFacePipeline
 
 
 from dotenv import load_dotenv
