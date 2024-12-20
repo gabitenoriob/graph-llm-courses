@@ -19,7 +19,8 @@ DOCS_PATH = "llm-knowledge-graph\\data\\dados"
 model_name = "multi-qa-MiniLM-L6-cos-v1"  
 
 # Carregar tokenizer e modelo localmente
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+#tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+tokenizer = AutoTokenizer.from_pretrained(model_name, proxies={'https': ''}, verify=False)
 model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
 # Criar pipeline para geração de texto
