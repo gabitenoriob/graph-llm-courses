@@ -2,4 +2,4 @@
 
 This repository accompanies the link:graphacademy.neo4j.com/courses/llm-knowledge-graphs-construction[Constructing Knowledge Graphs with LLMs^] on link:graphacademy.neo4j.com/courses/genai-workshop[GraphAcademy^].
 
-For a complete walkthrough of this repository, link:graphacademy.neo4j.com/courses/llm-knowledge-graphs-construction[enrol now^].
+My version of https://github.com/neo4j-graphacademy/llm-knowledge-graph-construction
