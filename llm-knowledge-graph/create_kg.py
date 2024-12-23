@@ -1,12 +1,14 @@
 import os
+from xml.dom import Node
 from pydantic.v1 import BaseModel
 from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.graphs import Neo4jGraph
+from langchain_neo4j import Neo4jGraph
 from langchain_experimental.graph_transformers import LLMGraphTransformer
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
-from langchain.llms import HuggingFacePipeline
+from langchain_community.llms import HuggingFacePipeline
+#from langchain.llms import HuggingFacePipeline
 
 
 from dotenv import load_dotenv
@@ -15,16 +17,22 @@ load_dotenv()
 # Entrada
 DOCS_PATH = "llm-knowledge-graph\\data\\dados"
 
-# Configurando o modelo LLM do LM Studio
-model_name = "multi-qa-MiniLM-L6-cos-v1"  
+# # Configurando o modelo LLM do LM Studio
+# model_name = "multi-qa-MiniLM-L6-cos-v1"  
 
-# Carregar tokenizer e modelo localmente
-#tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
-tokenizer = AutoTokenizer.from_pretrained(model_name, proxies={'https': ''}, verify=False)
-model = AutoModelForSequenceClassification.from_pretrained(model_name)
+# # Carregar tokenizer e modelo localmente
+# #tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+# tokenizer = AutoTokenizer.from_pretrained(model_name, proxies={'https': ''}, verify=False)
+# model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
-# Criar pipeline para geração de texto
-hf_pipeline = pipeline("feature-extraction", model=model, device=0)  # Use device=-1 para CPU
+local_path = r'C:\\Users\\gabrielabtn\\.cache\\huggingface\\transformers\\multi-qa-MiniLM-L6-cos-v1'
+
+# Carregar o tokenizer e o modelo localmente
+tokenizer = AutoTokenizer.from_pretrained(local_path)
+model = AutoModelForSequenceClassification.from_pretrained(local_path)
+
+# Criar pipeline para extração de recursos
+hf_pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer, device=-1)  # CPU
 
 # Configurando o LLM para LangChain
 llm = HuggingFacePipeline(pipeline=hf_pipeline)
@@ -33,9 +41,10 @@ llm = HuggingFacePipeline(pipeline=hf_pipeline)
 response = llm.invoke("Explique a importância dos embeddings no NLP.")
 print("Resposta do modelo:", response)
 
+
 # Configurando provedor de embeddings
 embedding_provider = HuggingFaceEmbeddings(
-    model_name=model_name,
+    model_name=model,
     model_kwargs={"device": "cpu"}  # Altere para "cuda" se estiver usando GPU
 )
 
@@ -57,10 +66,9 @@ doc_transformer = LLMGraphTransformer(
     llm=llm,
     )
 
-
 #Carrega arquivos PDF da pasta data usando o DirectoryLoader.
 loader = DirectoryLoader(DOCS_PATH, glob="**/*.pdf", loader_cls=PyPDFLoader)
-
+     
 #Divide o texto dos PDFs em chunks (blocos) menores usando o CharacterTextSplitter.
 text_splitter = CharacterTextSplitter(
     separator="\n\n",
