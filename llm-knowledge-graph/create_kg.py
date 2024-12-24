@@ -1,14 +1,13 @@
-import os
-from xml.dom import Node
-from pydantic.v1 import BaseModel
-from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
-from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_neo4j import Neo4jGraph
-from langchain_experimental.graph_transformers import LLMGraphTransformer
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 from langchain_community.llms import HuggingFacePipeline
 #from langchain.llms import HuggingFacePipeline
+import os
+from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
+from langchain.text_splitter import CharacterTextSplitter
+from langchain_neo4j import Neo4jGraph
+from langchain_experimental.graph_transformers import LLMGraphTransformer
+from langchain_community.graphs.graph_document import Node, Relationship
 
 
 from dotenv import load_dotenv
