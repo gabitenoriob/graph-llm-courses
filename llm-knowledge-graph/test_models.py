@@ -7,3 +7,6 @@ model_dirs = list(cache_path.glob("*"))
 print("Modelos instalados localmente:")
 for model_dir in model_dirs:
     print(model_dir.name)
+
+if not model_dirs:
+    print("Não há modelos instalados")

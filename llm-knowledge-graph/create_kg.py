@@ -24,11 +24,22 @@ DOCS_PATH = "llm-knowledge-graph\\data\\dados"
 # tokenizer = AutoTokenizer.from_pretrained(model_name, proxies={'https': ''}, verify=False)
 # model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
-local_path = r'C:\\Users\\gabrielabtn\\.cache\\huggingface\\transformers\\multi-qa-MiniLM-L6-cos-v1'
+from pathlib import Path
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-# Carregar o tokenizer e o modelo localmente
-tokenizer = AutoTokenizer.from_pretrained(local_path)
-model = AutoModelForSequenceClassification.from_pretrained(local_path)
+# Caminho local
+local_path = Path(r'C:\\Users\\gabrielabtn\\.cache\\huggingface\\transformers\\multi-qa-MiniLM-L6-cos-v1')
+
+# Verificar se o diretório local existe e contém arquivos
+if local_path.exists() and any(local_path.iterdir()):
+    tokenizer = AutoTokenizer.from_pretrained(str(local_path))
+    model = AutoModelForSequenceClassification.from_pretrained(str(local_path))
+else:
+    # Caso não exista ou esteja vazio, use o repo_id para baixar
+    repo_id = "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+    tokenizer = AutoTokenizer.from_pretrained(repo_id)
+    model = AutoModelForSequenceClassification.from_pretrained(repo_id)
+
 
 # Criar pipeline para extração de recursos
 hf_pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer, device=-1)  # CPU
