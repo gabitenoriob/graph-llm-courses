@@ -1,14 +1,15 @@
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from langchain_community.llms import HuggingFacePipeline
-#from langchain.llms import HuggingFacePipeline
 import os
 from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_neo4j import Neo4jGraph
 from langchain_experimental.graph_transformers import LLMGraphTransformer
 from langchain_community.graphs.graph_document import Node, Relationship
+import torch
+print(torch.cuda.is_available())  # Deve retornar True se a CUDA estiver disponível
 
 
 from dotenv import load_dotenv
@@ -30,46 +31,39 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 # Caminho local
 embedding_model_path = Path(r'C:\\Users\\gabrielabtn\\.cache\\huggingface\\hub\\multi-qa-MiniLM-L6-cos-v1')
+generation_model_path = Path(r'C:\\Users\\gabrielabtn\\.cache\\huggingface\\hub\\Phi-3.5-mini-instruct')
 
-# Verificar se o diretório local existe e contém arquivos
-if embedding_model_path.exists() and any(embedding_model_path.iterdir()):
-    embedding_tokenizer = AutoTokenizer.from_pretrained(str(embedding_model_path))
-    embedding_model = AutoModelForSequenceClassification.from_pretrained(str(embedding_model_path))
-else:
-    # Caso não exista ou esteja vazio, use o repo_id para baixar
-    repo_id = "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
-    embedding_tokenizer = AutoTokenizer.from_pretrained(repo_id)
-    embedding_model = AutoModelForSequenceClassification.from_pretrained(repo_id)
-
+# Verificar se os caminhos locais existem
+if not embedding_model_path.exists() or not any(embedding_model_path.iterdir()):
+    raise FileNotFoundError(f"Modelo de embeddings não encontrado em {embedding_model_path}")
 
 # Configurando provedor de embeddings
 embedding_provider = HuggingFaceEmbeddings(
-    model_name=embedding_model,
+    model_name=str(embedding_model_path),
     model_kwargs={"device": "cpu"}  # Altere para "cuda" se estiver usando GPU
 )
 
 # Gerar embeddings para uma query
 query = "Como os embeddings ajudam na recuperação de informações?"
 vector = embedding_provider.embed_query(query)
-print("Vector gerado para a query:", vector)
-
-# Caminho para o modelo de geração de texto 
-generation_model_path = Path(r'C:\\Users\\gabrielabtn\\.cache\\huggingface\\hub\\Phi-3.5-mini-instruct')
+#print("Vector gerado para a query:", vector)
 
 # Verificar se o diretório local existe e contém arquivos
 if generation_model_path.exists() and any(generation_model_path.iterdir()):
-    generation_tokenizer = AutoTokenizer.from_pretrained(str(generation_model_path))
-    generation_model = AutoModelForCausalLM.from_pretrained(str(generation_model_path))
+    try:
+        # Carregar tokenizer e modelo do caminho local 
+        generation_tokenizer = AutoTokenizer.from_pretrained(str(generation_model_path), trust_remote_code=True)
+        generation_model = AutoModelForCausalLM.from_pretrained(str(generation_model_path), trust_remote_code=True, attn_implementation='eager')
+    except Exception as e:
+        raise RuntimeError(f"Erro ao carregar o modelo local: {e}")
 else:
-    # Caso não exista ou esteja vazio, use o repo_id para baixar
-    # Load model directly
-    generation_tokenizer = AutoTokenizer.from_pretrained("microsoft/Phi-3.5-mini-instruct", trust_remote_code=True)
-    generation_model = AutoModelForCausalLM.from_pretrained("microsoft/Phi-3.5-mini-instruct", trust_remote_code=True)
+    # Lançar erro se o modelo local não estiver disponível
+    raise FileNotFoundError(f"O modelo local não foi encontrado ou está vazio em: {generation_model_path}")
 
 # Criar pipeline para geração de texto
-hf_pipeline = pipeline("text-generation", model=generation_model, tokenizer=generation_tokenizer, device=-1)  # CPU
+hf_pipeline = pipeline("text-generation", model=generation_model, tokenizer=generation_tokenizer, device=0)  # CPU =-1, GPU = 0
 
-# Configurando o LLM para LangChain
+# Configurar o LLM para LangChain
 llm = HuggingFacePipeline(pipeline=hf_pipeline)
 
 # Fazer uma consulta ao modelo como teste
