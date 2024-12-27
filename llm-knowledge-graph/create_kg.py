@@ -1,5 +1,6 @@
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from langchain_community.llms import HuggingFacePipeline
 #from langchain.llms import HuggingFacePipeline
 import os
@@ -28,33 +29,22 @@ from pathlib import Path
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 # Caminho local
-local_path = Path(r'C:\\Users\\gabrielabtn\\.cache\\huggingface\\transformers\\multi-qa-MiniLM-L6-cos-v1')
+embedding_model_path = Path(r'C:\\Users\\gabrielabtn\\.cache\\huggingface\\hub\\multi-qa-MiniLM-L6-cos-v1')
 
 # Verificar se o diretório local existe e contém arquivos
-if local_path.exists() and any(local_path.iterdir()):
-    tokenizer = AutoTokenizer.from_pretrained(str(local_path))
-    model = AutoModelForSequenceClassification.from_pretrained(str(local_path))
+if embedding_model_path.exists() and any(embedding_model_path.iterdir()):
+    embedding_tokenizer = AutoTokenizer.from_pretrained(str(embedding_model_path))
+    embedding_model = AutoModelForSequenceClassification.from_pretrained(str(embedding_model_path))
 else:
     # Caso não exista ou esteja vazio, use o repo_id para baixar
     repo_id = "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
-    tokenizer = AutoTokenizer.from_pretrained(repo_id)
-    model = AutoModelForSequenceClassification.from_pretrained(repo_id)
-
-
-# Criar pipeline para extração de recursos
-hf_pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer, device=-1)  # CPU
-
-# Configurando o LLM para LangChain
-llm = HuggingFacePipeline(pipeline=hf_pipeline)
-
-# Fazer uma consulta ao modelo como teste
-response = llm.invoke("Explique a importância dos embeddings no NLP.")
-print("Resposta do modelo:", response)
+    embedding_tokenizer = AutoTokenizer.from_pretrained(repo_id)
+    embedding_model = AutoModelForSequenceClassification.from_pretrained(repo_id)
 
 
 # Configurando provedor de embeddings
 embedding_provider = HuggingFaceEmbeddings(
-    model_name=model,
+    model_name=embedding_model,
     model_kwargs={"device": "cpu"}  # Altere para "cuda" se estiver usando GPU
 )
 
@@ -63,6 +53,28 @@ query = "Como os embeddings ajudam na recuperação de informações?"
 vector = embedding_provider.embed_query(query)
 print("Vector gerado para a query:", vector)
 
+# Caminho para o modelo de geração de texto 
+generation_model_path = Path(r'C:\\Users\\gabrielabtn\\.cache\\huggingface\\hub\\Phi-3.5-mini-instruct')
+
+# Verificar se o diretório local existe e contém arquivos
+if generation_model_path.exists() and any(generation_model_path.iterdir()):
+    generation_tokenizer = AutoTokenizer.from_pretrained(str(generation_model_path))
+    generation_model = AutoModelForCausalLM.from_pretrained(str(generation_model_path))
+else:
+    # Caso não exista ou esteja vazio, use o repo_id para baixar
+    # Load model directly
+    generation_tokenizer = AutoTokenizer.from_pretrained("microsoft/Phi-3.5-mini-instruct", trust_remote_code=True)
+    generation_model = AutoModelForCausalLM.from_pretrained("microsoft/Phi-3.5-mini-instruct", trust_remote_code=True)
+
+# Criar pipeline para geração de texto
+hf_pipeline = pipeline("text-generation", model=generation_model, tokenizer=generation_tokenizer, device=-1)  # CPU
+
+# Configurando o LLM para LangChain
+llm = HuggingFacePipeline(pipeline=hf_pipeline)
+
+# Fazer uma consulta ao modelo como teste
+response = llm.invoke("Explique a importância dos embeddings no NLP.")
+print("Resposta do modelo:", response)
 
 #Conexão com o BD
 graph = Neo4jGraph(
