@@ -4,7 +4,8 @@ from pathlib import Path
 cache_path = Path.home() / ".cache" / "huggingface" / "hub"
 model_dirs = list(cache_path.glob("*"))
 
-print("Modelos instalados localmente:")
+if model_dirs:
+    print("Modelos instalados localmente:")
 for model_dir in model_dirs:
     print(model_dir.name)
 

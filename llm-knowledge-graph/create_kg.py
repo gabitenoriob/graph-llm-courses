@@ -1,160 +1,106 @@
-from langchain_huggingface import HuggingFaceEmbeddings
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from langchain_community.llms import HuggingFacePipeline
 import os
-from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
-from langchain.text_splitter import CharacterTextSplitter
-from langchain_neo4j import Neo4jGraph
+import pandas as pd
+from dotenv import load_dotenv
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.graphs.neo4j_graph import Neo4jGraph
 from langchain_experimental.graph_transformers import LLMGraphTransformer
 from langchain_community.graphs.graph_document import Node, Relationship
-import torch
-print(torch.cuda.is_available())  # Deve retornar True se a CUDA estiver disponível
+from langchain_community.llms import HuggingFacePipeline
+from huggingface_hub import login
 
-
-from dotenv import load_dotenv
+# Carregar variáveis de ambiente
 load_dotenv()
 
-# Entrada
-DOCS_PATH = "llm-knowledge-graph\\data\\dados"
+# Autenticação na Hugging Face
+login(token=os.getenv('HUGGINGFACE_TOKEN'))
 
-# # Configurando o modelo LLM do LM Studio
-# model_name = "multi-qa-MiniLM-L6-cos-v1"  
+# Carregar CSV
+df = pd.read_csv("llm-knowledge-graph/data/base-problemas - enunciados e resoluções.csv")
 
-# # Carregar tokenizer e modelo localmente
-# #tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
-# tokenizer = AutoTokenizer.from_pretrained(model_name, proxies={'https': ''}, verify=False)
-# model = AutoModelForSequenceClassification.from_pretrained(model_name)
+# Carregar modelo de embeddings
+embedding_provider = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
-from pathlib import Path
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+# Carregar modelo de geração de texto
+generation_tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.2-1B")
+generation_model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.2-1B", attn_implementation='eager')
 
-# Caminho local
-embedding_model_path = Path(r'C:\\Users\\gabrielabtn\\.cache\\huggingface\\hub\\multi-qa-MiniLM-L6-cos-v1')
-generation_model_path = Path(r'C:\\Users\\gabrielabtn\\.cache\\huggingface\\hub\\Phi-3.5-mini-instruct')
-
-# Verificar se os caminhos locais existem
-if not embedding_model_path.exists() or not any(embedding_model_path.iterdir()):
-    raise FileNotFoundError(f"Modelo de embeddings não encontrado em {embedding_model_path}")
-
-# Configurando provedor de embeddings
-embedding_provider = HuggingFaceEmbeddings(
-    model_name=str(embedding_model_path),
-    model_kwargs={"device": "cpu"}  # Altere para "cuda" se estiver usando GPU
+# Criar pipeline
+txt_pipeline = pipeline(
+    "text-generation",
+    model=generation_model,
+    tokenizer=generation_tokenizer,
+    device=0,  # Use -1 para CPU
+    max_new_tokens=200
 )
 
-# Gerar embeddings para uma query
-query = "Como os embeddings ajudam na recuperação de informações?"
-vector = embedding_provider.embed_query(query)
-#print("Vector gerado para a query:", vector)
+# Configurar LLM para LangChain
+llm = HuggingFacePipeline(pipeline=txt_pipeline)
 
-# Verificar se o diretório local existe e contém arquivos
-if generation_model_path.exists() and any(generation_model_path.iterdir()):
-    try:
-        # Carregar tokenizer e modelo do caminho local 
-        generation_tokenizer = AutoTokenizer.from_pretrained(str(generation_model_path), trust_remote_code=True)
-        generation_model = AutoModelForCausalLM.from_pretrained(str(generation_model_path), trust_remote_code=True, attn_implementation='eager')
-    except Exception as e:
-        raise RuntimeError(f"Erro ao carregar o modelo local: {e}")
-else:
-    # Lançar erro se o modelo local não estiver disponível
-    raise FileNotFoundError(f"O modelo local não foi encontrado ou está vazio em: {generation_model_path}")
-
-# Criar pipeline para geração de texto
-hf_pipeline = pipeline("text-generation", model=generation_model, tokenizer=generation_tokenizer, device=0)  # CPU =-1, GPU = 0
-
-# Configurar o LLM para LangChain
-llm = HuggingFacePipeline(pipeline=hf_pipeline)
-
-# Fazer uma consulta ao modelo como teste
-response = llm.invoke("Explique a importância dos embeddings no NLP.")
-print("Resposta do modelo:", response)
-
-#Conexão com o BD
+# Conectar ao Neo4j
 graph = Neo4jGraph(
     url=os.getenv('NEO4J_URI'),
     username=os.getenv('NEO4J_USERNAME'),
     password=os.getenv('NEO4J_PASSWORD')
 )
 
-#Cria um transformador de grafo que usará o LLM para extrair entidades e relacionamentos do texto.
-doc_transformer = LLMGraphTransformer(
-    llm=llm,
+# Criar transformador de grafo
+doc_transformer = LLMGraphTransformer(llm=llm)
+
+# Criar entidades e relacionamentos
+for index, row in df.iterrows():
+    enunciado = row["enunciado"]
+    resolucao = row["resolucao"]
+
+    enunciado_id = f"Enunciado_{index}"
+    resolucao_id = f"Resolucao_{index}"
+
+    # Criar embeddings
+    enunciado_embedding = embedding_provider.embed_query(enunciado)
+    resolucao_embedding = embedding_provider.embed_query(resolucao)
+
+    # Criar nós no Neo4j
+    graph.query(
+        """
+        MERGE (e:Enunciado {id: $enunciado_id})
+        SET e.text = $enunciado, e.embedding = $enunciado_embedding
+        MERGE (r:Resolucao {id: $resolucao_id})
+        SET r.text = $resolucao, r.embedding = $resolucao_embedding
+        MERGE (e)-[:TEM_RESOLUCAO]->(r)
+        """,
+        {
+            "enunciado_id": enunciado_id,
+            "enunciado": enunciado,
+            "enunciado_embedding": enunciado_embedding,
+            "resolucao_id": resolucao_id,
+            "resolucao": resolucao,
+            "resolucao_embedding": resolucao_embedding
+        }
     )
 
-#Carrega arquivos PDF da pasta data usando o DirectoryLoader.
-loader = DirectoryLoader(DOCS_PATH, glob="**/*.pdf", loader_cls=PyPDFLoader)
-     
-#Divide o texto dos PDFs em chunks (blocos) menores usando o CharacterTextSplitter.
-text_splitter = CharacterTextSplitter(
-    separator="\n\n",
-    chunk_size=1500,
-    chunk_overlap=200,
-)
-
-docs = loader.load()
-chunks = text_splitter.split_documents(docs)
-
-
-#Para cada chunk gera identificadores,cria embeddings,armazena o chunk no Neo4j
-for chunk in chunks:
-
-    filename = os.path.basename(chunk.metadata["source"])
-    chunk_id = f"{filename}.{chunk.metadata['page']}"
-    print("Processing -", chunk_id)
-
-    # Embed the chunk
-    chunk_embedding = embedding_provider.embed_query(chunk.page_content)
-
-    # Add the Document and Chunk nodes to the graph
-    properties = {
-        "filename": filename,
-        "chunk_id": chunk_id,
-        "text": chunk.page_content,
-        "embedding": chunk_embedding
-    }
-    
-    graph.query("""
-        MERGE (d:Document {id: $filename})
-        MERGE (c:Chunk {id: $chunk_id})
-        SET c.text = $text
-        MERGE (d)<-[:PART_OF]-(c)
-        WITH c
-        CALL db.create.setNodeVectorProperty(c, 'textEmbedding', $embedding)
-        """, 
-        properties
-    )
-
-    #Extrai entidades e relacionamentos usando o LLM:
-    graph_docs = doc_transformer.convert_to_graph_documents([chunk])
-
-    #Relaciona entidades ao chunk
-    for graph_doc in graph_docs:
-        chunk_node = Node(
-            id=chunk_id,
-            type="Chunk"
-        )
-
-        for node in graph_doc.nodes:
-
-            graph_doc.relationships.append(
-                Relationship(
-                    source=chunk_node,
-                    target=node, 
-                    type="HAS_ENTITY"
-                    )
-                )
-
-    # add the graph documents to the graph
-    graph.add_graph_documents(graph_docs)
-
-#Cria um índice vetorial chamado chunkVector no Neo4j para nós Chunk
-#Configura a similaridade vetorial como cosine com dimensões 384 (compatível com os embeddings gerados pelo modelo multi-qa-MiniLM-L6-cos-v1).
-graph.query("""
-    CREATE VECTOR INDEX `chunkVector`
+# Criar índice vetorial para busca
+graph.query(
+    """
+    CREATE VECTOR INDEX `enunciadoVector`
     IF NOT EXISTS
-    FOR (c: Chunk) ON (c.textEmbedding)
+    FOR (e:Enunciado) ON (e.embedding)
     OPTIONS {indexConfig: {
     `vector.dimensions`: 384,
     `vector.similarity_function`: 'cosine'
-    }};""")
+    }};
+    """
+)
+
+graph.query(
+    """
+    CREATE VECTOR INDEX `resolucaoVector`
+    IF NOT EXISTS
+    FOR (r:Resolucao) ON (r.embedding)
+    OPTIONS {indexConfig: {
+    `vector.dimensions`: 384,
+    `vector.similarity_function`: 'cosine'
+    }};
+    """
+)
+
+print("Knowledge Graph criado com sucesso!")

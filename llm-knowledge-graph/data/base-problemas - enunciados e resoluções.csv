@@ -1,0 +1,506 @@
+Enunciados:,Resposta:
+Um cliente de uma casa de câmbio deseja converter uma certa quantia de reais para dólares. Faça um programa que atenda a essa solicitação considerando a cotação atual.,"def converter_moedas(reais, cotacao_dolar):
+  """"""Converte uma quantidade de reais para dólares.
+
+  Args:
+    reais: A quantidade de reais a ser convertida.
+    cotacao_dolar: A cotação do dólar em relação ao real.
+
+  Returns:
+    O valor convertido em dólares.
+  """"""
+
+  dolares = reais / cotacao_dolar
+  return dolares
+
+# Obtendo os dados do usuário
+reais = float(input(""Digite a quantidade de reais que deseja converter: ""))
+cotacao_dolar = float(input(""Digite a cotação do dólar: ""))
+
+# Chamando a função e exibindo o resultado
+resultado = converter_moedas(reais, cotacao_dolar)
+print(f""O valor em dólares é: {resultado:.2f}"")"
+Um supermercado deseja calcular o valor total das compras de um cliente considerando que ele pode comprar diversos itens e aplicar cupons de desconto. Faça um programa para calcular o total da compra.,"function calcularTotalCompra(itens, cupons) {
+  // Inicializa o valor total da compra
+  let total = 0;
+
+  // Calcula o valor total dos itens
+  itens.forEach(item => {
+    total += item.preco * item.quantidade;
+  });
+
+  // Aplica os cupons de desconto
+  cupons.forEach(cupom => {
+    if (cupom.tipo === 'valor') {
+      total -= cupom.valor;
+    } else if (cupom.tipo === 'percentual') {
+      total *= (1 - cupom.valor / 100);
+    }
+  });
+
+  return total;
+}
+
+// Exemplo de uso:
+const itens = [
+  { nome: 'Maçã', preco: 2.5, quantidade: 3 },
+  { nome: 'Banana', preco: 1.8, quantidade: 5 },
+  { nome: 'Leite', preco: 4.2, quantidade: 2 }
+];
+
+const cupons = [
+  { tipo: 'valor', valor: 5 }, // Desconto de R$ 5
+  { tipo: 'percentual', valor: 10 } // Desconto de 10%
+];
+
+const totalCompra = calcularTotalCompra(itens, cupons);
+console.log(""O valor total da compra é:"", totalCompra.toFixed(2));"
+"Um sistema de hotelaria precisa registrar reservas de clientes para diferentes tipos de quartos, aplicando descontos especiais para temporadas. Crie um programa que ajude a gerenciar essas reservas.","class Quarto {
+    private String tipo;
+    private double precoBase;
+    private boolean disponivel;
+
+    // Construtor e getters/setters
+}
+
+class Reserva {
+    private Cliente cliente;
+    private Date dataEntrada;
+    private Date dataSaida;
+    private Quarto quarto;
+    private double valorTotal;
+
+    // Construtor e getters/setters
+}
+
+class Cliente {
+    private String nome;
+    private String cpf;
+    // Outros dados do cliente
+}
+
+class Temporada {
+    private Date dataInicio;
+    private Date dataFim;
+    private double desconto; // Pode ser valor ou porcentagem
+}"
+"Uma empresa deseja desenvolver um sistema para gerenciar seus funcionários, calculando salários e adicionando bônus dependendo do desempenho. O programa deve ser capaz de gerenciar todas essas funcionalidades.","funcionarios = []
+
+def cadastrar_funcionario():
+    nome = input(""Digite o nome do funcionário: "")
+    cargo = input(""Digite o cargo: "")
+    salario_base = float(input(""Digite o salário base: ""))
+    funcionario = {'nome': nome, 'cargo': cargo, 'salario_base': salario_base}
+    funcionarios.append(funcionario)
+
+def listar_funcionarios():
+    for funcionario in funcionarios:
+        print(f""Nome: {funcionario['nome']}, Cargo: {funcionario['cargo']}, Salário: R${funcionario['salario_base']:.2f}"")
+
+while True:
+    print(""\n--- Sistema de Gerenciamento de Funcionários ---"")
+    print(""1. Cadastrar funcionário"")
+    print(""2. Listar funcionários"")
+    print(""3. Sair"")
+    opcao = input(""Escolha uma opção: "")
+
+    if opcao == '1':
+        cadastrar_funcionario()
+    elif opcao == '2':
+        listar_funcionarios()
+    elif opcao == '3':
+        break
+    else:
+        print(""Opção inválida."")"
+Crie um programa que calcule o imposto de renda a partir dos dados de renda mensal de uma pessoa.,"def calcular_imposto_renda(renda_mensal):
+    """"""Calcula o imposto de renda com base na renda mensal.
+
+    Args:
+        renda_mensal (float): Renda mensal do contribuinte.
+
+    Returns:
+        float: Valor do imposto de renda.
+    """"""
+
+    # Simplificando, vamos usar alíquotas e deduções fictícias.
+    # Para valores reais, consulte a tabela da Receita Federal.
+    base_calculo = renda_mensal * 12  # Considerando a renda anual
+
+    if base_calculo <= 19039.88:
+        imposto = 0
+    elif base_calculo <= 28266.55:
+        imposto = (base_calculo - 19039.88) * 0.075
+    elif base_calculo <= 37510.58:
+        imposto = 1425.53 + (base_calculo - 28266.55) * 0.15
+    elif base_calculo <= 46646.86:
+        imposto = 4257.34 + (base_calculo - 37510.58) * 0.225
+    else:
+        imposto = 7530.68 + (base_calculo - 46646.86) * 0.275
+
+    return imposto
+
+# Exemplo de uso
+renda_mensal = float(input(""Digite sua renda mensal: ""))
+imposto = calcular_imposto_renda(renda_mensal)
+print(f""O valor do imposto de renda é: R$ {imposto:.2f}"")"
+"Um banco precisa simular a concessão de empréstimos para seus clientes, levando em consideração o valor solicitado, as taxas de juros e o prazo de pagamento. Desenvolva um programa para isso.","def calcular_prestacao(valor_emprestimo, taxa_juros, prazo):
+  """"""Calcula o valor da prestação de um empréstimo.
+
+  Args:
+    valor_emprestimo: O valor total do empréstimo.
+    taxa_juros: A taxa de juros mensal.
+    prazo: O prazo do empréstimo em meses.
+
+  Returns:
+    O valor da prestação mensal.
+  """"""
+
+  # Convertendo a taxa de juros anual para mensal
+  taxa_juros_mensal = taxa_juros / 12 / 100
+
+  # Calculando o valor da prestação utilizando a fórmula de amortização constante
+  prestacao = valor_emprestimo * (taxa_juros_mensal * (1 + taxa_juros_mensal) ** prazo) / ((1 + taxa_juros_mensal) ** prazo - 1)
+
+  return prestacao
+
+# Entrada de dados pelo usuário
+valor_emprestimo = float(input(""Digite o valor do empréstimo: ""))
+taxa_juros = float(input(""Digite a taxa de juros anual (%): ""))
+prazo = int(input(""Digite o prazo do empréstimo em meses: ""))
+
+# Calculando a prestação
+prestacao = calcular_prestacao(valor_emprestimo, taxa_juros, prazo)
+
+# Imprimindo o resultado
+print(f""O valor da prestação mensal é: R$ {prestacao:.2f}"")"
+Crie um programa que calcule a área de uma figura geométrica. O usuário deverá informar os dados necessários.,"import math
+
+def calcular_area(figura):
+    if figura == 'triângulo':
+        base = float(input(""Informe a base do triângulo: ""))
+        altura = float(input(""Informe a altura do triângulo: ""))
+        area = (base * altura) / 2
+    elif figura == 'retângulo':
+        largura = float(input(""Informe a largura do retângulo: ""))
+        altura = float(input(""Informe a altura do retângulo: ""))
+        area = largura * altura
+    elif figura == 'círculo':
+        raio = float(input(""Informe o raio do círculo: ""))
+        area = math.pi * (raio ** 2)
+    else:
+        return ""Figura não reconhecida.""
+    
+    return area
+
+def main():
+    figura = input(""Informe a figura geométrica (triângulo, retângulo, círculo): "").strip().lower()
+    area = calcular_area(figura)
+    print(f""A área do {figura} é: {area}"")
+
+if __name__ == ""__main__"":
+    main()"
+Desenvolva um programa que determine se um número é par ou ímpar. Considere apenas números inteiros positivos.,"function verificarParOuImpar() {
+    // Solicita um número inteiro positivo ao usuário
+    let numero = parseInt(prompt(""Informe um número inteiro positivo:""));
+
+    // Verifica se o número é positivo
+    if (numero <= 0) {
+        alert(""Por favor, informe um número inteiro positivo."");
+        return;
+    }
+
+    // Determina se o número é par ou ímpar
+    if (numero % 2 === 0) {
+        alert(""O número "" + numero + "" é par."");
+    } else {
+        alert(""O número "" + numero + "" é ímpar."");
+    }
+}
+
+// Chama a função
+verificarParOuImpar();"
+Crie um algoritmo que simule o lançamento de um dado de seis faces. Considere que o dado é perfeito e que o resultado do lançamento é aleatório.,"import random
+
+def lancar_dado():
+    """"""Gera um número aleatório entre 1 e 6, simulando o lançamento de um dado.""""""
+    resultado = random.randint(1, 6)
+    return resultado
+
+def main():
+    print(""Simulador de Lançamento de Dado de 6 Faces"")
+    while True:
+        # Simula o lançamento do dado
+        resultado = lancar_dado()
+        print(f""O resultado do lançamento do dado é: {resultado}"")
+        
+        # Pergunta ao usuário se deseja lançar o dado novamente
+        continuar = input(""Deseja lançar o dado novamente? (s/n): "").strip().lower()
+        if continuar != 's':
+            print(""Obrigado por jogar!"")
+            break
+
+if __name__ == ""__main__"":
+    main()"
+Escreva um programa que calcule o fatorial de um número. O usuário deverá informar o número.,"def calcular_fatorial(n):
+    """"""Calcula o fatorial de um número inteiro positivo.""""""
+    if n < 0:
+        return None  # Fatorial não definido para números negativos
+    fatorial = 1
+    for i in range(1, n + 1):
+        fatorial *= i
+    return fatorial
+
+def main():
+    while True:
+        try:
+            numero = int(input(""Informe um número inteiro não negativo para calcular o fatorial: ""))
+            if numero < 0:
+                print(""Por favor, informe um número não negativo."")
+                continue
+
+            resultado = calcular_fatorial(numero)
+            print(f""O fatorial de {numero} é: {resultado}"")
+            break  # Sai do loop após calcular o fatorial
+        except ValueError:
+            print(""Entrada inválida. Por favor, insira um número inteiro."")
+
+if __name__ == ""__main__"":
+    main()"
+Crie um programa que resolva uma equação de segundo grau.,"import math
+
+def calcular_raizes(a, b, c):
+    """"""Calcula as raízes da equação de segundo grau ax^2 + bx + c = 0.""""""
+    discriminante = b**2 - 4*a*c
+
+    if discriminante < 0:
+        return None  # Raízes complexas
+    elif discriminante == 0:
+        raiz = -b / (2*a)
+        return (raiz,)  # Uma raiz única
+    else:
+        raiz1 = (-b + math.sqrt(discriminante)) / (2*a)
+        raiz2 = (-b - math.sqrt(discriminante)) / (2*a)
+        return (raiz1, raiz2)  # Duas raízes
+
+def main():
+    print(""Resolução de Equação do Segundo Grau: ax^2 + bx + c = 0"")
+    
+    while True:
+        try:
+            a = float(input(""Informe o valor de a (não pode ser zero): ""))
+            if a == 0:
+                print(""O valor de 'a' não pode ser zero. Tente novamente."")
+                continue
+            
+            b = float(input(""Informe o valor de b: ""))
+            c = float(input(""Informe o valor de c: ""))
+            
+            raizes = calcular_raizes(a, b, c)
+            
+            if raizes is None:
+                print(""A equação possui raízes complexas."")
+            elif len(raizes) == 1:
+                print(f""A equação possui uma raiz: x = {raizes[0]}"")
+            else:
+                print(f""As raízes da equação são: x1 = {raizes[0]}, x2 = {raizes[1]}"")
+            break  # Sai do loop após calcular as raízes
+        except ValueError:
+            print(""Entrada inválida. Por favor, insira números válidos."")
+
+if __name__ == ""__main__"":
+    main()"
+Escreva um programa para converter uma temperatura de uma escala para outra. O programa deve ser eficiente e amigável ao usuário.,"def converter_temperatura(temperatura, escala_origem, escala_destino):
+  """"""Converte uma temperatura de uma escala para outra.
+
+  Args:
+    temperatura: A temperatura a ser convertida.
+    escala_origem: A escala de origem (C, F ou K).
+    escala_destino: A escala de destino (C, F ou K).
+
+  Returns:
+    A temperatura convertida.
+  """"""
+
+  if escala_origem == 'C' and escala_destino == 'F':
+    return temperatura * 9/5 + 32
+  elif escala_origem == 'C' and escala_destino == 'K':
+    return temperatura + 273.15
+  elif escala_origem == 'F' and escala_destino == 'C':
+    return (temperatura - 32) * 5/9
+  elif escala_origem == 'F' and escala_destino == 'K':
+    return (temperatura + 459.67) * 5/9
+  elif escala_origem == 'K' and escala_destino == 'C':
+    return temperatura - 273.15
+  elif escala_origem == 'K' and escala_destino == 'F':
+    return temperatura * 9/5 - 459.67
+  else:
+    return ""Escalas de temperatura inválidas.""
+
+# Entrada do usuário
+temperatura = float(input(""Digite a temperatura: ""))
+escala_origem = input(""Digite a escala de origem (C, F ou K): "").upper()
+escala_destino = input(""Digite a escala de destino (C, F ou K): "").upper()
+
+# Chamada da função e exibição do resultado
+resultado = converter_temperatura(temperatura, escala_origem, escala_destino)
+print(f""A temperatura convertida é: {resultado:.2f} {escala_destino}"")"
+"Desenvolva um programa para gerar relatórios mensais de vendas de uma empresa, exibindo todos os dados importantes para o departamento financeiro.","// Supondo que os dados estejam em um array de objetos
+const vendas = [
+  { produto: 'Produto A', quantidade: 10, valor: 100 },
+  // ... outros produtos
+];
+
+// Função para calcular o total de vendas
+function calcularTotalVendas(dados) {
+  return dados.reduce((total, venda) => total + venda.valor, 0);
+}
+
+// Função para gerar o relatório em PDF (utilizando a biblioteca jsPDF)
+function gerarRelatorioPDF(dados) {
+  const pdf = new jsPDF();
+
+  // Adicionar cabeçalho e informações gerais
+  pdf.text('Relatório Mensal de Vendas', 14, 10);
+  pdf.text(`Período: ${new Date().toLocaleDateString()}`, 14, 20);
+
+  // Adicionar tabela com os dados de vendas
+  pdf.autoTable({
+    head: ['Produto', 'Quantidade', 'Valor'],
+    body: dados.map(venda => [venda.produto, venda.quantidade, venda.valor])
+  });
+
+  // Adicionar o total de vendas
+  pdf.text(`Total de Vendas: R$ ${calcularTotalVendas(dados).toFixed(2)}`, 14, pdf.autoTable.previous.finalY + 10);
+
+  // Salvar o PDF
+  pdf.save('relatorio_vendas.pdf');
+}
+
+// Chamar a função para gerar o relatório
+gerarRelatorioPDF(vendas);"
+Implemente um simulador de investimentos que ajude os usuários a fazerem melhores decisões financeiras em um ambiente econômico instável.,"// Simulação básica sem considerar taxas, dividendos, etc.
+class Simulador {
+  constructor(ativos, alocacoes) {
+    this.ativos = ativos;
+    this.alocacoes = alocacoes;
+  }
+
+  simular(cenario, periodo) {
+    // Implementação da lógica de simulação aqui, utilizando um modelo de precificação
+    // e gerando dados aleatórios para os preços dos ativos de acordo com o cenário
+    // ...
+
+    // Calcular o retorno do portfólio
+    // ...
+
+    // Retornar os resultados da simulação
+    return {
+      retorno: retorno,
+      risco: risco,
+      // ... outros dados
+    };
+  }
+}
+
+// Exemplo de uso
+const ativos = ['Ação A', 'Ação B', 'Fundo I'];
+const alocacoes = [0.4, 0.3, 0.3];
+
+const simulador = new Simulador(ativos, alocacoes);
+const resultado = simulador.simular('alta', 12); // Simular por 12 meses em um cenário de alta
+
+// Visualizar os resultados
+// ... utilizando bibliotecas como Chart.js ou D3.js"
+Escreva um programa que classifique os alunos de uma turma com base no desempenho escolar. O programa deve ser justo e equilibrado.,"def classificar_alunos(alunos, criterios, pesos):
+  """"""Classifica os alunos com base nos critérios e pesos definidos.
+
+  Args:
+    alunos: Um dicionário onde as chaves são os nomes dos alunos e os valores são dicionários com as notas de cada critério.
+    criterios: Uma lista com os nomes dos critérios.
+    pesos: Uma lista com os pesos de cada critério, correspondendo à ordem dos critérios.
+
+  Returns:
+    Uma lista de tuplas (nome, nota_final), ordenada pela nota final em ordem decrescente.
+  """"""
+
+  # Calcular a nota final de cada aluno
+  for aluno, notas in alunos.items():
+    nota_final = sum(notas[criterio] * peso for criterio, peso in zip(criterios, pesos))
+    alunos[aluno]['nota_final'] = nota_final
+
+  # Ordenar os alunos pela nota final
+  classificacao = sorted(alunos.items(), key=lambda x: x[1]['nota_final'], reverse=True)
+
+  return classificacao
+
+# Exemplo de uso
+alunos = {
+  'João': {'prova1': 8, 'prova2': 7, 'trabalho': 9},
+  'Maria': {'prova1': 9, 'prova2': 8, 'trabalho': 8},
+  'Pedro': {'prova1': 7, 'prova2': 9, 'trabalho': 9}
+}
+
+criterios = ['prova1', 'prova2', 'trabalho']
+pesos = [0.4, 0.4, 0.2]
+
+classificacao = classificar_alunos(alunos, criterios, pesos)
+
+# Imprimir a classificação
+for nome, notas in classificacao:
+  print(f""{nome}: {notas['nota_final']}"")"
+Crie um sistema para reserva de passagens que seja eficiente e atenda às necessidades de todos os usuários.,"from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+
+class Usuario(Base):
+    __tablename__ = 'usuarios'
+    id = Column(Integer, primary_key=True)
+    nome = Column(String)
+    email = Column(String, unique=True)
+    senha = Column(String)
+
+class Voo(Base):
+    __tablename__ = 'voos'
+    id = Column(Integer, primary_key=True)
+    origem = Column(String)
+    destino = Column(String)
+    data_hora = Column(DateTime)
+    # ... outros atributos
+
+class Reserva(Base):
+    __tablename__ = 'reservas'
+    id = Column(Integer, primary_key=True)
+    usuario_id = Column(Integer, ForeignKey('usuarios.id'))
+    voo_id = Column(Integer, ForeignKey('voos.id'))
+    # ... outros atributos"
+Desenvolva uma calculadora financeira capaz de realizar todos os cálculos financeiros necessários para uma empresa.,"import tkinter as tk
+
+def calcular_juros_simples():
+    capital = float(entrada_capital.get())
+    taxa = float(entrada_taxa.get()) / 100
+    tempo = int(entrada_tempo.get())
+    juros = capital * taxa * tempo
+    resultado.config(text=f""Juros Simples: R$ {juros:.2f}"")
+
+# Criar a janela principal
+root = tk.Tk()
+root.title(""Calculadora Financeira Simples"")
+
+# Criar os elementos da interface
+label_capital = tk.Label(root, text=""Capital Inicial:"")
+entrada_capital = tk.Entry(root)
+label_taxa = tk.Label(root, text=""Taxa de Juros (%):"")
+entrada_taxa = tk.Entry(root)
+label_tempo = tk.Label(root, text=""Tempo (meses):"")
+entrada_tempo = tk.Entry(root)
+botao_calcular = tk.Button(root, text=""Calcular"", command=calcular_juros_simples)
+resultado = tk.Label(root, text="""")
+
+# Posicionar os elementos na janela
+# ... (utilizar grid, pack ou place)
+
+# Exibir a janela
+root.mainloop()"
+,
+Desenvolva um sistema que organize eventos de forma eficiente e ajude os usuários a planejar os detalhes com facilidade.,
